@@ -115,10 +115,16 @@ std::string getPlaylist(long int trackId) {
 }
 
 int main(int argc, char *argv[]) {
+    print(" [♥] sndcld v2, written by Sweets ");
+
+	if (argc < 3) {
+		print(" [♥] ERROR: You must provide at least two arguments");
+		return -1;
+	}
+
     std::string url(argv[1]);
     std::string path(argv[2]);
 
-    print(" [♥] sndcld v2, written by Sweets ");
 
     print(" [♥] Sending GET request ");
     const std::string response = GET(url);
