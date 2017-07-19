@@ -14,3 +14,6 @@ cd ..
 make
 ./sndcld
 ````
+
+json11 is a lightweight JSON library developped by Dropbox for C++11.
+Happily cloned from: https://github.com/dropbox/json11
