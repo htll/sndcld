@@ -36,11 +36,11 @@ std::string replaceAll(std::string string, std::string substring, std::string re
     }
 }
 
-std::string concat(std::vector<std::string> vector, int start, int end, std::string concatenator) {
+std::string concat(std::vector<std::string> vector, size_t start, size_t end, std::string concatenator) {
     if (start < 0 || vector.size() - 1 < end)
         return "";
     std::string string;
-    for (int index = start; index <= end; index++) {
+    for (size_t index = start; index <= end; index++) {
         string += vector.at(index) + concatenator;
     }
     return string;
