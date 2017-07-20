@@ -44,7 +44,7 @@ std::string concat(std::vector<std::string> vector, size_t start, size_t end, st
     std::string string;
     for (size_t index = start; index <= end; index++) {
         string += vector.at(index) + concatenator;
-		if (DEBUG) print("concat: " + vector.at(index));
+        if (DEBUG) print("concat: " + vector.at(index));
     }
     return string;
 }
@@ -53,7 +53,7 @@ void download(std::string path, std::string url) {
     curlpp::Cleanup cleaner;
     curlpp::Easy request;
 
-	if (DEBUG) print(url);
+    if (DEBUG) print(url);
     request.setOpt(new curlpp::options::Url(url));
 
     std::list<std::string> headers;
@@ -70,7 +70,7 @@ void download(std::string path, std::string url) {
 }
 
 std::string getMalformedURL(std::string playlistData) {
-	//if (DEBUG) print("getMalformedURL: " +playlistData);
+    //if (DEBUG) print("getMalformedURL: " +playlistData);
 
     print(" [♥] Getting mp3 size ");
     std::stringstream playlistStringStream(playlistData);
@@ -85,8 +85,8 @@ std::string getMalformedURL(std::string playlistData) {
     std::string part;
     while (urlStream >> part) {
         urlParts.push_back(part);
-		if (DEBUG) print("getMalformedURL: part " + part);
-	}
+        if (DEBUG) print("getMalformedURL: part " + part);
+    }
 
     print(" [♥] Concatenating URL parts ");
     std::string malformedUrl = urlParts.at(0) + "//" + concat(urlParts, 1, 2, "/") + "0/" + urlParts.at(4) + "/" + urlParts.at(5);
@@ -124,40 +124,55 @@ std::string getPlaylist(long int trackId) {
 int main(int argc, char *argv[]) {
     print(" [♥] sndcld v2, written by Sweets ");
 
-	if (argc < 3) {
-		print(" [♥] ERROR: You must provide at least two arguments");
-		return -1;
-	}
-	
+    if (argc < 3) {
+        print(" [♥] ERROR: You must provide at least two arguments");
+        return -1;
+    }
+    
 
     std::string url(argv[1]);
     std::string path(argv[2]);
 
-	if (DEBUG) {
-		print("url is " + url);
-		print("path is " + path);
-	}
+    if (DEBUG) {
+        print("url is " + url);
+        print("path is " + path);
+    }
 
     print(" [♥] Sending GET request ");
     const std::string response = GET(url);
     print(" [♥] Searching for track ID ");
 
-    std::regex json("publisher_metadata\":\\{(.*?)\\},\"purchase_title");
+    std::regex json("publisher_metadata\":\\{(.*?)\\},\"purchase_title"), 
+                fallback("api.soundcloud.com/tracks/[0-9]+");
     std::smatch match;
+    long int id;
 
     if (std::regex_search(response, match, json)) {
         std::string strMatch(match[0]);
         print(" [♥] Parsing publisher_metadata JSON for ID ");
         std::string JSONError;
         const json11::Json metadata = json11::Json::parse(strMatch.substr(20, strMatch.length() - 36), JSONError);
-        long int id = std::stol(metadata["id"].dump());
-        print(" [♥] ID found => " + std::to_string(id));
-        print(" [♥] Gettig stream playlist ");
-        std::string playlist = getPlaylist(id);
-        print(" [♥] Constructing malformed URL for mp3 file ");
-        std::string mp3url = getMalformedURL(playlist);
-        download(path, mp3url);
+        id = std::stol(metadata["id"].dump());
+    } else if (std::regex_search(response, match, fallback)) { // fall back to a dirty hack when publisher_metadata is null
+        print(" [♥] Failed to find publisher_metadata, looking for api tracks");
+        std::stringstream ss(match[0]);
+        std::string item("");
+        std::vector<std::string> tokens;
+        while (getline(ss, item, '/')) {
+            tokens.push_back(item);
+        }
+        id = std::stol(tokens.back());
+    } else {
+        print("ERROR: failed to find ID");
+        return -1;
     }
+
+    print(" [♥] ID found => " + std::to_string(id));
+    print(" [♥] Gettig stream playlist ");
+    std::string playlist = getPlaylist(id);
+    print(" [♥] Constructing malformed URL for mp3 file ");
+    std::string mp3url = getMalformedURL(playlist);
+    download(path, mp3url);
 
     return 0;
 }
