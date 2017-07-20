@@ -7,6 +7,8 @@
 #include <curlpp/Options.hpp>
 #include "json11.hpp"
 
+#define DEBUG false
+
 void print(std::string string) {
     std::cout << string << std::endl;
 } // BECAUSE I'M LAZY
@@ -42,6 +44,7 @@ std::string concat(std::vector<std::string> vector, size_t start, size_t end, st
     std::string string;
     for (size_t index = start; index <= end; index++) {
         string += vector.at(index) + concatenator;
+		if (DEBUG) print("concat: " + vector.at(index));
     }
     return string;
 }
@@ -50,6 +53,7 @@ void download(std::string path, std::string url) {
     curlpp::Cleanup cleaner;
     curlpp::Easy request;
 
+	if (DEBUG) print(url);
     request.setOpt(new curlpp::options::Url(url));
 
     std::list<std::string> headers;
@@ -66,6 +70,7 @@ void download(std::string path, std::string url) {
 }
 
 std::string getMalformedURL(std::string playlistData) {
+	//if (DEBUG) print("getMalformedURL: " +playlistData);
 
     print(" [♥] Getting mp3 size ");
     std::stringstream playlistStringStream(playlistData);
@@ -78,11 +83,13 @@ std::string getMalformedURL(std::string playlistData) {
     std::stringstream urlStream(replaceAll(lines.at(lines.size() - 2), "/", "\n", 0));
     std::vector<std::string> urlParts;
     std::string part;
-    while (urlStream >> part)
+    while (urlStream >> part) {
         urlParts.push_back(part);
+		if (DEBUG) print("getMalformedURL: part " + part);
+	}
 
     print(" [♥] Concatenating URL parts ");
-    std::string malformedUrl = concat(urlParts, 0, 2, "/") + "0/" + urlParts.at(4) + "/" + urlParts.at(5);
+    std::string malformedUrl = urlParts.at(0) + "//" + concat(urlParts, 1, 2, "/") + "0/" + urlParts.at(4) + "/" + urlParts.at(5);
 
     return malformedUrl;
 }
@@ -121,10 +128,15 @@ int main(int argc, char *argv[]) {
 		print(" [♥] ERROR: You must provide at least two arguments");
 		return -1;
 	}
+	
 
     std::string url(argv[1]);
     std::string path(argv[2]);
 
+	if (DEBUG) {
+		print("url is " + url);
+		print("path is " + path);
+	}
 
     print(" [♥] Sending GET request ");
     const std::string response = GET(url);
