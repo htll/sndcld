@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 3) {
         print(" [♥] ERROR: You must provide at least two arguments");
+        print("Usage: ./sndcld URL PATH");
         return -1;
     }
     
