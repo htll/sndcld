@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <fstream>
 #include <regex>
 
@@ -8,6 +9,8 @@
 #include "json11.hpp"
 
 #define DEBUG false
+
+#define useragentheader "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
 void print(std::string string) {
     std::cout << string << std::endl;
@@ -20,7 +23,7 @@ std::string GET(std::string url) {
     request.setOpt(new curlpp::options::Url(url));
 
     std::list<std::string> headers;
-    headers.push_back("User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
+    headers.push_back(useragentheader);
 
     request.setOpt(new curlpp::options::HttpHeader(headers));
 
@@ -57,7 +60,7 @@ void download(std::string path, std::string url) {
     request.setOpt(new curlpp::options::Url(url));
 
     std::list<std::string> headers;
-    headers.push_back("User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36");
+    headers.push_back(useragentheader);
 
     request.setOpt(new curlpp::options::HttpHeader(headers));
 
@@ -125,7 +128,7 @@ int main(int argc, char *argv[]) {
     print(" [♥] sndcld v2, written by Sweets ");
 
     if (argc < 3) {
-        print(" [♥] ERROR: You must provide at least two arguments");
+        print(" [x] ERROR: You must provide at least two arguments");
         print("Usage: ./sndcld URL PATH");
         return -1;
     }
